@@ -1,0 +1,143 @@
+.product-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-section label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+  transition: color 0.2s ease-in-out;
+}
+
+.filter-section:focus-within label {
+  color: #2c5282;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.search-input,
+.category-select,
+.sort-select,
+.price-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease-in-out;
+  background-color: white;
+  color: #2d3748;
+}
+
+.search-input::placeholder,
+.price-input::placeholder {
+  color: #a0aec0;
+}
+
+.search-input:hover,
+.category-select:hover,
+.sort-select:hover,
+.price-input:hover {
+  border-color: #cbd5e0;
+}
+
+.search-input:focus,
+.category-select:focus,
+.sort-select:focus,
+.price-input:focus {
+  outline: none;
+  border-color: #2c5282;
+  box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.2);
+}
+
+.price-range {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.price-input-group {
+  flex: 1;
+}
+
+.price-separator {
+  color: #718096;
+  font-weight: 500;
+}
+
+.price-input {
+  width: 100%;
+}
+
+.clear-filters {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+  margin-top: 0.5rem;
+}
+
+.clear-filters:hover {
+  background-color: #c53030;
+  transform: translateY(-1px);
+}
+
+.clear-filters:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.4);
+}
+
+.clear-filters:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+  .product-filter {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+
+  .filter-section {
+    width: 100%;
+  }
+
+  .price-inputs {
+    flex-direction: row;
+  }
+}
