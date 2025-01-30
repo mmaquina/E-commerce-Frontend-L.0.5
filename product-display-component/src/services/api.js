@@ -1,5 +1,5 @@
 // Base API configuration for the e-commerce application
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://8000_172_31_37_3.workspace.develop.kavia.ai';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://8000_172_31_46_215.workspace.develop.kavia.ai';
 
 // PUBLIC_INTERFACE
 /**
@@ -8,10 +8,15 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://8000_172_31_
  * @param {Object} params - Query parameters
  * @returns {Promise<any>} - The API response
  */
-export const get = async (endpoint, params = {}) => {
+export const get = async (endpoint, params = {}, token) => {
   const queryString = new URLSearchParams(params).toString();
   const url = `${API_BASE_URL}${endpoint}${queryString ? `?${queryString}` : ''}`;
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    method: "GET", 
+    headers: {
+      "Authorization": `Bearer ${token}`,  
+      "Content-Type": "application/json",
+    }});
   if (!response.ok) {
     throw new Error(`API call failed: ${response.statusText}`);
   }

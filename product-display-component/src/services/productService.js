@@ -6,9 +6,9 @@ import { get, handleApiError } from './api';
  * @param {Object} params - Query parameters for filtering and pagination
  * @returns {Promise<Array>} - Array of products
  */
-export const getProducts = async (params = {}) => {
+export const getProducts = async (params = {}, token) => {
   try {
-    return await get('/products/', params);
+    return await get('/products/', params, token);
   } catch (error) {
     return handleApiError(error);
   }

@@ -14,7 +14,8 @@ const initialFilters = {
 /**
  * Provider component for product-related state and operations
  */
-export const ProductProvider = ({ children }) => {
+export const ProductProvider = ({ children, token }) => {
+  const authToken=token
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,11 +30,11 @@ export const ProductProvider = ({ children }) => {
     setFilters(initialFilters);
   }, []);
 
-  const fetchProducts = useCallback(async (params = {}) => {
+  const fetchProducts = useCallback(async (params = {}, token=authToken) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getProducts(params);
+      const data = await getProducts(params, token);
       setProducts(data);
     } catch (err) {
       setError(err.message);
