@@ -4,10 +4,41 @@ on:
   push:
     tags:
       - '*'
+    branches:
+      - main
+      - develop
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
+    # Environment configuration based on branch/tag
+    environment:
+      name: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'development' }}
+    
+    # Environment variables configuration
+    env:
+      # React environment
+      NODE_ENV: ${{ startsWith(github.ref, 'refs/tags/') && 'production' || 'development' }}
+      REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
+      REACT_APP_ENV: ${{ secrets.REACT_APP_ENV || startsWith(github.ref, 'refs/tags/') && 'production' || 'development' }}
+      
+      # Feature flags and app configuration
+      REACT_APP_ENABLE_ANALYTICS: ${{ secrets.REACT_APP_ENABLE_ANALYTICS || 'false' }}
+      REACT_APP_API_TIMEOUT: ${{ secrets.REACT_APP_API_TIMEOUT || '30000' }}
+      
+      # AWS Configuration
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      
+      # Amplify Configuration
+      AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+      AMPLIFY_BRANCH_NAME: ${{ github.ref_name }}
+      
+      # Build Configuration
+      CI: true
+      GENERATE_SOURCEMAP: ${{ startsWith(github.ref, 'refs/tags/') && 'false' || 'true' }}
     
     steps:
       - name: Checkout repository
@@ -30,16 +61,125 @@ jobs:
         run: npm ci
 
       - name: Build application
-        env:
-          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
         run: npm run build
 
-      - name: Deploy to AWS Amplify
-        env:
-          APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
-          BRANCH_NAME: ${{ secrets.AMPLIFY_BRANCH_NAME }}
+      - name: Validate Environment Variables
         run: |
-          aws amplify start-job \
-            --app-id $APP_ID \
-            --branch-name $BRANCH_NAME \
-            --job-type RELEASE
+          # Required environment variables
+          REQUIRED_VARS=(
+            "REACT_APP_API_BASE_URL"
+            "AMPLIFY_APP_ID"
+            "AWS_ACCESS_KEY_ID"
+            "AWS_SECRET_ACCESS_KEY"
+            "AWS_REGION"
+          )
+          
+          # Validate required environment variables
+          for var in "${REQUIRED_VARS[@]}"; do
+            if [ -z "${!var}" ]; then
+              echo "Error: Required environment variable $var is not set"
+              exit 1
+            fi
+          done
+          
+          echo "✅ All required environment variables are set"
+
+      - name: Prepare Environment Variables for Amplify
+        id: prepare-env
+        run: |
+          # Create environment variables JSON for Amplify with defaults
+          ENV_VARS=$(cat << EOF
+          {
+            "REACT_APP_API_BASE_URL": "$REACT_APP_API_BASE_URL",
+            "REACT_APP_ENV": "$REACT_APP_ENV",
+            "REACT_APP_ENABLE_ANALYTICS": "$REACT_APP_ENABLE_ANALYTICS",
+            "REACT_APP_API_TIMEOUT": "$REACT_APP_API_TIMEOUT",
+            "NODE_ENV": "$NODE_ENV",
+            "CI": "true",
+            "GENERATE_SOURCEMAP": "$GENERATE_SOURCEMAP"
+          }
+          EOF
+          )
+          
+          # Validate JSON format
+          echo "$ENV_VARS" | jq empty || {
+            echo "Error: Invalid JSON format for environment variables"
+            exit 1
+          }
+          
+          # Save environment variables for next step
+          echo "env_vars=$ENV_VARS" >> $GITHUB_OUTPUT
+          echo "✅ Environment variables prepared successfully"
+
+      - name: Deploy to AWS Amplify
+        id: deploy
+        run: |
+          # Start Amplify deployment with environment variables
+          DEPLOYMENT_ID=$(aws amplify start-job \
+            --app-id $AMPLIFY_APP_ID \
+            --branch-name $AMPLIFY_BRANCH_NAME \
+            --job-type RELEASE \
+            --environment-variables "${{ steps.prepare-env.outputs.env_vars }}" \
+            --query 'jobSummary.jobId' \
+            --output text)
+          
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "Started deployment with ID: $DEPLOYMENT_ID"
+          
+          # Monitor deployment status with timeout
+          MAX_ATTEMPTS=20
+          ATTEMPT=1
+          
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Checking deployment status (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+            
+            JOB_STATUS=$(aws amplify get-job \
+              --app-id $AMPLIFY_APP_ID \
+              --branch-name $AMPLIFY_BRANCH_NAME \
+              --job-id $DEPLOYMENT_ID \
+              --query 'job.summary.status' \
+              --output text)
+            
+            case $JOB_STATUS in
+              "SUCCEED")
+                echo "✅ Deployment completed successfully!"
+                exit 0
+                ;;
+              "FAILED"|"CANCELLED")
+                echo "❌ Deployment failed with status: $JOB_STATUS"
+                # Get detailed job info for debugging
+                aws amplify get-job \
+                  --app-id $AMPLIFY_APP_ID \
+                  --branch-name $AMPLIFY_BRANCH_NAME \
+                  --job-id $DEPLOYMENT_ID
+                exit 1
+                ;;
+              *)
+                if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                  echo "❌ Deployment timed out after $MAX_ATTEMPTS attempts"
+                  exit 1
+                fi
+                echo "Deployment status: $JOB_STATUS. Waiting 30 seconds..."
+                sleep 30
+                ATTEMPT=$((ATTEMPT + 1))
+                ;;
+            esac
+          done
+
+      - name: Verify Deployment Environment
+        if: success()
+        run: |
+          # Verify environment variables were properly injected
+          echo "Verifying deployment environment..."
+          
+          DEPLOYMENT_INFO=$(aws amplify get-branch \
+            --app-id $AMPLIFY_APP_ID \
+            --branch-name $AMPLIFY_BRANCH_NAME)
+          
+          # Check if environment variables are present
+          echo "$DEPLOYMENT_INFO" | jq -e '.branch.environmentVariables' > /dev/null || {
+            echo "❌ Environment variables not found in deployment"
+            exit 1
+          }
+          
+          echo "✅ Environment variables successfully verified in deployment"
