@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - '*'
-    branches:
-      - main
-      - develop
 
 jobs:
   deploy:
@@ -24,7 +21,7 @@ jobs:
       
       # Amplify Configuration
       AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
-      AMPLIFY_BRANCH_NAME: ${{ github.ref_name }}
+      AMPLIFY_BRANCH_NAME: main
     
     steps:
       - name: Checkout repository
