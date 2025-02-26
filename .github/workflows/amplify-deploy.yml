@@ -89,46 +89,46 @@ jobs:
           echo "✅ Environment variables prepared successfully"
 
       - name: Deploy to AWS Amplify
-  id: deploy
-  run: |
-    # Start Amplify deployment with environment variables
-    DEPLOYMENT_ID=$(aws amplify start-job \
-      --app-id $AMPLIFY_APP_ID \
-      --branch-name $AMPLIFY_BRANCH_NAME \
-      --job-type RELEASE \
-      --environment-variables "${{ steps.prepare-env.outputs.env_vars }}" \
-      --query 'jobSummary.jobId' \
-      --output text)
+        id: deploy
+        run: |
+          # Start Amplify deployment with environment variables
+          DEPLOYMENT_ID=$(aws amplify start-job \
+          --app-id $AMPLIFY_APP_ID \
+          --branch-name $AMPLIFY_BRANCH_NAME \
+          --job-type RELEASE \
+          --environment-variables "${{ steps.prepare-env.outputs.env_vars }}" \
+          --query 'jobSummary.jobId' \
+          --output text)
     
-    echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-    echo "Started deployment with ID: $DEPLOYMENT_ID"
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "Started deployment with ID: $DEPLOYMENT_ID"
     
-    # Wait for the deployment to finish and get the final status
-    JOB_STATUS=$(aws amplify get-job \
-      --app-id $AMPLIFY_APP_ID \
-      --branch-name $AMPLIFY_BRANCH_NAME \
-      --job-id $DEPLOYMENT_ID \
-      --query 'job.summary.status' \
-      --output text)
+          # Wait for the deployment to finish and get the final status
+          JOB_STATUS=$(aws amplify get-job \
+          --app-id $AMPLIFY_APP_ID \
+          --branch-name $AMPLIFY_BRANCH_NAME \
+          --job-id $DEPLOYMENT_ID \
+          --query 'job.summary.status' \
+          --output text)
 
-    case $JOB_STATUS in
-      "SUCCEED")
-        echo "✅ Deployment completed successfully!"
-        ;;
-      "FAILED"|"CANCELLED")
-        echo "❌ Deployment failed with status: $JOB_STATUS"
-        # Get detailed job info for debugging
-        aws amplify get-job \
+          case $JOB_STATUS in
+          "SUCCEED")
+          echo "✅ Deployment completed successfully!"
+          ;;
+          "FAILED"|"CANCELLED")
+          echo "❌ Deployment failed with status: $JOB_STATUS"
+          # Get detailed job info for debugging
+          aws amplify get-job \
           --app-id $AMPLIFY_APP_ID \
           --branch-name $AMPLIFY_BRANCH_NAME \
           --job-id $DEPLOYMENT_ID
-        exit 1
-        ;;
-      *)
-        echo "❌ Deployment failed with unexpected status: $JOB_STATUS"
-        exit 1
-        ;;
-    esac
+          exit 1
+          ;;
+          *)
+          echo "❌ Deployment failed with unexpected status: $JOB_STATUS"
+          exit 1
+          ;;
+          esac
 
       - name: Verify Deployment Environment
         if: success()
