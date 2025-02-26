@@ -14,11 +14,6 @@ jobs:
       # React environment
       REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
       
-      # AWS Configuration
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      
       # Amplify Configuration
       AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
       AMPLIFY_BRANCH_NAME: main
@@ -31,6 +26,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
 
       - name: Validate Environment Variables
         run: |
@@ -38,9 +34,6 @@ jobs:
           REQUIRED_VARS=(
             "REACT_APP_API_BASE_URL"
             "AMPLIFY_APP_ID"
-            "AWS_ACCESS_KEY_ID"
-            "AWS_SECRET_ACCESS_KEY"
-            "AWS_REGION"
           )
           
           # Validate required environment variables
