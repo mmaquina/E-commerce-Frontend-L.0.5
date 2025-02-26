@@ -11,12 +11,8 @@ function App() {
     setSelectedProductId(productId);
   };
 
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const token = urlParams.get('token')
-
   return (
-    <ProductProvider token={token}>
+    <ProductProvider>
       <div className="App">
         <h1>Product Display Component</h1>
         {selectedProductId ? (
