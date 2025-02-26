@@ -25,7 +25,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-
+      
+      - name: Set environment variable in Amplify
+        run: |
+          echo "Setting environment variables in AWS Amplify..."
+          aws amplify update-app --app-id "$AMPLIFY_APP_ID" \
+            --environment-variables REACT_APP_API_BASE_URL="$REACT_APP_API_BASE_URL"
+  
       - name: Deploy to AWS Amplify
         id: deploy
         run: |
