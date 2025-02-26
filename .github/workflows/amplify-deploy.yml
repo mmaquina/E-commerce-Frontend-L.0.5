@@ -44,7 +44,6 @@ jobs:
             --app-id "$AMPLIFY_APP_ID" \
             --branch-name "$AMPLIFY_BRANCH_NAME" \
             --job-type RELEASE \
-            --environment-variables "$ENV_VARS" \
             --query 'jobSummary.jobId' \
             --output text)
 
