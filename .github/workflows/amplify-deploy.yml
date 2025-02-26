@@ -52,7 +52,7 @@ jobs:
           # Create environment variables JSON for Amplify with defaults
           ENV_VARS=$(cat << EOF
           {
-            "REACT_APP_API_BASE_URL": "$REACT_APP_API_BASE_URL",
+            "REACT_APP_API_BASE_URL": "$REACT_APP_API_BASE_URL"
           }
           EOF
           )
