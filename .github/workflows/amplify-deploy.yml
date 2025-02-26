@@ -24,14 +24,6 @@ jobs:
       AMPLIFY_BRANCH_NAME: main
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
