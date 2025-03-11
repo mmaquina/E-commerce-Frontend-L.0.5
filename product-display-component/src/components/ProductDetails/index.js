@@ -36,6 +36,7 @@ const ProductDetails = ({ productId }) => {
             <div className="skeleton skeleton-text skeleton-title" data-testid="skeleton-title" />
             <div className="skeleton skeleton-text" />
             <div className="skeleton skeleton-text skeleton-price" data-testid="skeleton-price" />
+            <div className="skeleton skeleton-text skeleton-availability" data-testid="skeleton-availability" />
             <div className="skeleton skeleton-text skeleton-description" data-testid="skeleton-description" />
           </div>
         </div>
@@ -53,7 +54,7 @@ const ProductDetails = ({ productId }) => {
     );
   }
 
-  const { title, price, description, category, image } = selectedProduct;
+  const { title, price, description, category, image, available } = selectedProduct;
 
   return (
     <div className="product-details">
@@ -79,6 +80,11 @@ const ProductDetails = ({ productId }) => {
           <h1 className="product-title">{title}</h1>
           <p className="product-category">{category}</p>
           <p className="product-price">${price.toFixed(2)}</p>
+          <div className="product-availability">
+            <span className={`availability-status ${available ? 'available' : 'unavailable'}`}>
+              {available ? 'In Stock' : 'Out of Stock'}
+            </span>
+          </div>
           <p className="product-description">{description}</p>
         </div>
       </div>

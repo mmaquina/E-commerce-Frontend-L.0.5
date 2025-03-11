@@ -104,6 +104,30 @@
   color: #4a5568;
 }
 
+.product-availability {
+  margin: 0.5rem 0;
+}
+
+.availability-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.availability-status.available {
+  background-color: #c6f6d5;
+  color: #22543d;
+  border: 1px solid #9ae6b4;
+}
+
+.availability-status.unavailable {
+  background-color: #fed7d7;
+  color: #822727;
+  border: 1px solid #feb2b2;
+}
+
 .error-message {
   color: #e53e3e;
   padding: 1rem;
@@ -145,6 +169,11 @@
 
 .skeleton-price {
   width: 30%;
+  height: 24px;
+}
+
+.skeleton-availability {
+  width: 25%;
   height: 24px;
 }
 

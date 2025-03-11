@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ProductDetails from '../components/ProductDetails';
 import { ProductContext } from '../context/ProductContext';
@@ -11,7 +11,8 @@ const mockProduct = {
   price: 99.99,
   description: 'Test product description',
   category: 'Test Category',
-  image: 'test-image.jpg'
+  image: 'test-image.jpg',
+  available: true
 };
 
 // Mock context values
@@ -54,6 +55,7 @@ describe('ProductDetails Component', () => {
     expect(screen.getByTestId('skeleton-image')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton-title')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton-price')).toBeInTheDocument();
+    expect(screen.getByTestId('skeleton-availability')).toBeInTheDocument();
     expect(screen.getByTestId('skeleton-description')).toBeInTheDocument();
   });
 
@@ -84,6 +86,9 @@ describe('ProductDetails Component', () => {
     expect(screen.getByText(`$${mockProduct.price.toFixed(2)}`)).toBeInTheDocument();
     expect(screen.getByText(mockProduct.description)).toBeInTheDocument();
     expect(screen.getByAltText(mockProduct.title)).toHaveAttribute('src', mockProduct.image);
+    expect(screen.getByText('In Stock')).toBeInTheDocument();
+    expect(screen.getByText('In Stock')).toHaveClass('availability-status');
+    expect(screen.getByText('In Stock')).toHaveClass('available');
   });
 
   test('handles image loading error by showing fallback image', async () => {
@@ -106,5 +111,16 @@ describe('ProductDetails Component', () => {
     renderProductDetails(contextValue, {});
     
     expect(mockFetchProductById).not.toHaveBeenCalled();
+  });
+
+  test('displays out of stock message when product is not available', () => {
+    const unavailableProduct = { ...mockProduct, available: false };
+    const contextValue = createMockContextValue({ selectedProduct: unavailableProduct });
+    
+    renderProductDetails(contextValue, { productId: '1' });
+    
+    expect(screen.getByText('Out of Stock')).toBeInTheDocument();
+    expect(screen.getByText('Out of Stock')).toHaveClass('availability-status');
+    expect(screen.getByText('Out of Stock')).toHaveClass('unavailable');
   });
 });
