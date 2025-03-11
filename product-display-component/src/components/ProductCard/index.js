@@ -9,6 +9,7 @@ import './styles.css';
  * @param {string} props.product.image - Product image URL
  * @param {string} props.product.title - Product title
  * @param {number} props.product.price - Product price
+ * @param {boolean} props.product.available - Product availability status
  * @param {Function} props.onClick - Click handler for product selection
  * @param {boolean} props.loading - Loading state flag
  * @param {string} [props.currencySymbol='$'] - Currency symbol to display before price
@@ -22,7 +23,10 @@ const ProductCard = ({ product, onClick, loading, currencySymbol = '$' }) => {
         <div className="product-image-placeholder" data-testid="product-image-placeholder"></div>
         <div className="product-info-placeholder" data-testid="product-info-placeholder">
           <div className="title-placeholder"></div>
-          <div className="price-placeholder"></div>
+          <div className="product-details-placeholder">
+            <div className="price-placeholder"></div>
+            <div className="availability-placeholder"></div>
+          </div>
         </div>
       </div>
     );
@@ -32,7 +36,7 @@ const ProductCard = ({ product, onClick, loading, currencySymbol = '$' }) => {
     return null;
   }
 
-  const { image, title, price } = product;
+  const { image, title, price, available = true } = product;
 
   const handleClick = () => {
     if (onClick) {
@@ -60,9 +64,14 @@ const ProductCard = ({ product, onClick, loading, currencySymbol = '$' }) => {
       </div>
       <div className="product-info">
         <h3 className="product-title">{title}</h3>
-        <p className="product-price">
-          {currencySymbol}{typeof price === 'number' ? price.toFixed(2) : '0.00'}
-        </p>
+        <div className="product-details">
+          <p className="product-price">
+            {currencySymbol}{typeof price === 'number' ? price.toFixed(2) : '0.00'}
+          </p>
+          <div className={`availability-badge ${available ? 'available' : 'unavailable'}`} data-testid="availability-badge">
+            {available ? 'Available' : 'Unavailable'}
+          </div>
+        </div>
       </div>
     </div>
   );
